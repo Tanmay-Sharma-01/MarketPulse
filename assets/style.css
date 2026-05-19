@@ -1,0 +1,92 @@
+/* Dark finance dashboard aesthetic */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.stApp {
+    background: linear-gradient(160deg, #0b1220 0%, #111827 45%, #0f172a 100%);
+    color: #e2e8f0;
+}
+
+.block-container {
+    padding-top: 1.5rem;
+    max-width: 1200px;
+}
+
+h1, h2, h3 {
+    color: #f8fafc !important;
+    letter-spacing: -0.02em;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+[data-testid="stMetricDelta"] {
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 6px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    border-radius: 8px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #1e293b !important;
+    color: #38bdf8 !important;
+}
+
+.stSidebar {
+    background: #0f172a;
+    border-right: 1px solid #1e293b;
+}
+
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    border: none;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.6rem 1rem;
+}
+
+.stButton > button[kind="primary"]:hover {
+    filter: brightness(1.08);
+}
+
+.stExpander {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid #334155;
+    border-radius: 10px;
+}
+
+div[data-testid="stDataFrame"] {
+    border: 1px solid #334155;
+    border-radius: 10px;
+}
+
+.stAlert {
+    border-radius: 10px;
+}
