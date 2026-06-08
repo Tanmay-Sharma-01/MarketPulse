@@ -31,6 +31,48 @@ h1, h2, h3 {
     font-weight: 600;
 }
 
+.metric-card {
+    min-height: 76px;
+}
+
+.metric-label {
+    color: rgba(250, 250, 250, 0.6);
+    font-size: 0.875rem;
+    line-height: 1.25;
+}
+
+.metric-value {
+    color: #38bdf8;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.sector-metric-card {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.sector-metric-value {
+    display: block;
+    max-width: 100%;
+    font-size: clamp(0.8rem, 1.2rem, 1.6rem);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.chart-title {
+    color: #f8fafc;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 1.5rem;
+}
+
+.chart-gap {
+    height: 1rem;
+}
+
 .badge {
     display: inline-block;
     padding: 0.35rem 0.85rem;

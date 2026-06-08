@@ -1,0 +1,10 @@
+.env
+.cache/
+__pycache__/
+*.py[cod]
+*.pyo
+*.log
+streamlit.out.log
+streamlit.err.log
+venv/
+.venv/

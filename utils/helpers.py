@@ -35,7 +35,10 @@ def retry(max_attempts: int = 3, delay: float = RETRY_DELAY_SECONDS) -> Callable
                     )
                     if attempt < max_attempts:
                         time.sleep(delay * attempt)
-            raise RuntimeError(f"{func.__name__} failed after {max_attempts} attempts") from last_error
+            msg = f"{func.__name__} failed after {max_attempts} attempts"
+            if last_error is not None:
+                msg = f"{msg}: {last_error}"
+            raise RuntimeError(msg) from last_error
 
         return wrapper  # type: ignore[return-value]
 

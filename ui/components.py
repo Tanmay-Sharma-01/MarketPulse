@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from html import escape
 from typing import Any
 
 import streamlit as st
@@ -30,6 +31,20 @@ def status_badge(label: str, level: str) -> None:
 def metric_card(label: str, value: str, delta: str | None = None, delta_color: str = "normal") -> None:
     """Styled metric display."""
     st.metric(label=label, value=value, delta=delta, delta_color=delta_color)  # type: ignore[arg-type]
+
+
+def sector_metric_card(value: str) -> None:
+    """Metric-style card that wraps long sector names without clipping."""
+    safe_value = escape(value or "N/A")
+    st.markdown(
+        f"""
+        <div class="metric-card sector-metric-card">
+            <div class="metric-label">Sector</div>
+            <div class="metric-value sector-metric-value">{safe_value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def sentiment_gauge(sentiment: dict[str, Any]) -> None:
@@ -69,19 +84,16 @@ def header_block(info: dict[str, Any]) -> None:
     st.markdown(f"### {name}")
 
     delta = format_percent(change_pct) if change_pct is not None else None
-    delta_color = "normal"
-    if change_pct is not None:
-        delta_color = "normal" if change_pct >= 0 else "inverse"
 
     cols = st.columns(4)
     with cols[0]:
-        metric_card("Price", format_currency(price), delta=delta, delta_color=delta_color)
+        metric_card("Price", format_currency(price), delta=delta, delta_color="normal")
     with cols[1]:
         metric_card("Market Cap", _fmt_cap(info.get("market_cap")))
     with cols[2]:
         metric_card("P/E Ratio", f"{info.get('pe_ratio', 'N/A')}")
     with cols[3]:
-        metric_card("Sector", str(info.get("sector", "N/A")))
+        sector_metric_card(str(info.get("sector", "N/A")))
 
 
 def _fmt_cap(value: float | None) -> str:

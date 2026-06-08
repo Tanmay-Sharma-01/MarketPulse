@@ -1,0 +1,147 @@
+AI Stock Research Assistant - Major File Guide
+
+Purpose
+This guide explains the major files in the app, how they work together, and the agentic tools used in the project. It is written to make the project easier to pitch in interviews.
+
+High-Level Interview Pitch
+The app is a conversational multi-agent stock research assistant. A user asks a natural-language question, LangGraph routes the intent, market data tools gather evidence, analysis modules compute sentiment/technicals/risk, deterministic analyst agents create bull/bear/technical/PM viewpoints, and an optional DeepSeek synthesis layer turns the evidence into a natural response. The UI then renders both the chat answer and a dashboard.
+
+Root Files
+
+app.py
+Main Streamlit entry point. It defines the Chat, Quick Research, and Dashboard tabs. It initializes Streamlit session state, stores chat messages, loads the LangGraph workflow, runs FinBERT once via Streamlit caching, and renders dashboards from either chat state or quick research state.
+
+README.md
+Project overview, setup instructions, architecture, chat feature explanation, agent explanation, and interview pitch.
+
+requirements.txt
+Python dependencies. Core libraries include Streamlit, yfinance, pandas, Plotly, Transformers, Torch, LangGraph, LangChain, requests, curl-cffi, and python-dotenv.
+
+.env.example
+Safe environment variable template. It documents optional DeepSeek, FinBERT, and local model settings without storing secrets.
+
+assets/style.css
+Custom Streamlit styling for cards, metrics, chart spacing, and dashboard polish.
+
+Data Layer
+
+data/stock_data.py
+Fetches price history and company fundamentals from yfinance. It normalizes company fields, computes daily price change, and returns a stock package containing `info` and `history`.
+
+data/news_fetcher.py
+Fetches recent news from yfinance and normalizes headline fields so sentiment and UI modules can consume consistent dictionaries.
+
+Analysis Layer
+
+analysis/sentiment.py
+Runs FinBERT over recent news headlines. It returns headline-level sentiment items, sentiment counts, average score, overall label, and an interpretation.
+
+analysis/technicals.py
+Computes RSI, moving averages, MACD, returns, and rolling annualized volatility from price history. It returns both latest indicator values and an enriched DataFrame for charts.
+
+analysis/risk_analysis.py
+Evaluates risk using volatility, drawdown, and trend weakness. It assigns a risk level and notes the major drivers.
+
+analysis/memo_generator.py
+Builds a deterministic analyst-style investment memo from company info, news, sentiment, technicals, and risk.
+
+analysis/final_response_generator.py
+Creates the final conversational response. It builds structured context from all evidence, calls DeepSeek if `DEEPSEEK_API_KEY` is configured, and falls back to deterministic narrative output if the API key is missing or the request fails.
+
+Graph Orchestration
+
+graph/router.py
+Extracts ticker symbols and classifies the user query into intents such as investment thesis, catalyst analysis, technical analysis, risk analysis, beginner explanation, comparison, or unknown.
+
+graph/state.py
+Defines the shared LangGraph state schema. It includes user input, tickers, events, errors, memory, market data, analysis outputs, agent findings, recommendation, final response, critique, and refinement flags.
+
+graph/workflow.py
+Builds the LangGraph workflow. The graph routes the query, fetches data, computes sentiment/technicals/risk, optionally performs a deeper risk branch, generates a memo, runs analyst agents, synthesizes a final response, runs critique, and optionally refines once. Comparison queries use a separate branch that fetches two stock packages.
+
+Agent Layer
+
+agents/analysts.py
+Contains the deterministic agent functions:
+- Bull Analyst: creates upside findings from positive sentiment and bullish technical structure.
+- Bear Analyst: creates downside findings from negative sentiment, volatility, and drawdown.
+- Technical Analyst: interprets RSI, MACD, and trend structure.
+- Portfolio Manager: creates a simple recommendation anchor and confidence score from sentiment and risk.
+- Critique Reviewer: checks whether bull, bear, and technical evidence is present and asks for refinement if needed.
+
+agents/llm.py
+Optional local-first LLM loader using HuggingFace Transformers and LangChain Community. It attempts to load `LOCAL_CHAT_MODEL` and returns `None` if unavailable, allowing the app to fall back safely.
+
+Prompts And Tools
+
+prompts/agent_prompts.py
+Prompt templates for Bull, Bear, Technical, Portfolio Manager, and Critique roles. The current analyst implementation is deterministic, but these templates document the intended agent responsibilities and can be used if the agent layer is expanded to prompt-based agents.
+
+tools/research_tools.py
+LangChain tool wrappers around the existing project functions. These expose stock data, news, technical indicators, risk, sentiment, and memo generation as tool-style functions for future agent expansion.
+
+Memory
+
+memory/session_memory.py
+Lightweight session-local memory. It stores recent user/assistant messages, recently used tickers, and the last conclusion in Streamlit session state. It avoids an external database while still enabling basic follow-up context.
+
+UI Layer
+
+ui/dashboard.py
+Renders the Overview, Technicals, Sentiment, Investment Memo, and Comparison views. It owns Plotly charts for price, MACD, volatility, and sentiment distribution.
+
+ui/components.py
+Reusable UI building blocks such as metric cards, header blocks, sentiment gauges, and formatting-friendly display helpers.
+
+Utilities
+
+utils/config.py
+Central config file. It loads `.env`, stores app constants, FinBERT settings, DeepSeek settings, retry settings, and risk thresholds.
+
+utils/helpers.py
+Formatting helpers for currency, percentages, dates, and retry behavior.
+
+utils/logger.py
+Central logger setup used across modules.
+
+How The Files Work Together
+
+1. The user enters a chat message in `app.py`.
+2. `app.py` creates initial state and calls `build_workflow()` from `graph/workflow.py`.
+3. `graph/router.py` extracts tickers and intent.
+4. `graph/workflow.py` calls `data/stock_data.py` and `data/news_fetcher.py`.
+5. The workflow calls `analysis/sentiment.py`, `analysis/technicals.py`, and `analysis/risk_analysis.py`.
+6. The workflow calls `analysis/memo_generator.py` for a deterministic report.
+7. The workflow calls `agents/analysts.py` for bull, bear, technical, PM, and critique outputs.
+8. `analysis/final_response_generator.py` produces the final conversational answer.
+9. `app.py` stores the response and final state in session memory.
+10. `ui/dashboard.py` renders the visual dashboard for the latest chat response or quick report.
+
+Agentic Tools Used
+
+LangGraph
+Used to define the multi-step research graph, route branches, pass shared state between nodes, and add conditional edges such as comparison routing, deeper risk analysis, fetch aborts, and critique refinement.
+
+LangChain Tools
+`tools/research_tools.py` wraps core functions with `@tool`, making the data and analysis functions compatible with future LangChain-style agents.
+
+FinBERT
+Used as a local sentiment model for financial headlines. It gives the system a domain-specific AI signal without requiring a paid API.
+
+DeepSeek
+Optional final synthesis layer. It does not fetch data or invent calculations. It receives structured evidence and writes the final conversational analyst response.
+
+Deterministic Analyst Agents
+The Bull, Bear, Technical, Portfolio Manager, and Critique agents are implemented as deterministic Python functions. This keeps the research grounded, repeatable, and easy to explain in interviews.
+
+Session Memory
+The app stores recent conversation context locally inside Streamlit session state. This gives the chat experience continuity without needing a database.
+
+Strong Interview Talking Points
+
+- The project separates data gathering, analysis, agent reasoning, synthesis, memory, and UI into clear modules.
+- LangGraph makes the workflow explainable because every node has one responsibility.
+- The agents are deterministic where accuracy matters, while the LLM is only used for final language synthesis.
+- The app has graceful fallbacks when DeepSeek is not configured.
+- The same evidence can power both a conversational answer and a visual dashboard.
+- The project demonstrates practical AI engineering: routing, state management, tool wrappers, retrieval from external data sources, local model inference, and human-readable UI.

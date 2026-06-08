@@ -45,7 +45,7 @@ def compute_technicals(history: pd.DataFrame) -> dict[str, Any]:
     df["MACD_Signal"] = signal_line
     df["MACD_Hist"] = histogram
     df["Returns"] = close.pct_change()
-    df["Volatility_20d"] = df["Returns"].rolling(window=20).std() * np.sqrt(252)
+    df["Volatility_20d"] = df["Returns"].rolling(window=20, min_periods=5).std() * np.sqrt(252)
 
     latest = df.iloc[-1]
     rsi_val = float(latest["RSI"]) if pd.notna(latest["RSI"]) else None
